@@ -1,0 +1,43 @@
+/* c:\mineria_datos\recomendacion_tarjeta_CT\public\style.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+form {
+    margin: 20px 0;
+}
+
+label {
+    display: block;
+    margin: 5px 0;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#recommendation {
+    margin-top: 20px;
+    font-size: 1.2em;
+}
+
+#cliente-detalles, #preferencias-form-container {
+    margin-top: 20px;
+}

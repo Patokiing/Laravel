@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendación de Tarjetas de Crédito</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Recomendación de Tarjetas de Crédito</h1>
+
+    <div id="cliente-info">
+        <h2>Información del Cliente</h2>
+        <form id="cliente-form">
+            <label for="cliente-id">ID del Cliente</label>
+            <input type="text" id="cliente-id" name="cliente-id" required>
+            <button type="submit">Consultar</button>
+        </form>
+        <div id="cliente-detalles"></div>
+    </div>
+
+    <div id="preferencias-form-container" style="display: none;">
+        <h2>Modificar Preferencias</h2>
+        <form id="preferences-form">
+            <input type="hidden" id="cliente-id-hidden">
+            <label for="points">Puntos</label>
+            <input type="checkbox" id="points" name="preferences" value="1">
+            <br>
+            <label for="cashback">Devolución de Dinero</label>
+            <input type="checkbox" id="cashback" name="preferences" value="1">
+            <br>
+            <label for="premios">Premios</label>
+            <input type="checkbox" id="premios" name="preferences" value="1">
+            <br>
+            <label for="descuentos">Descuentos</label>
+            <input type="checkbox" id="descuentos" name="preferences" value="1">
+            <br>
+            <button type="submit">Obtener Recomendación</button>
+        </form>
+        <div id="recommendation"></div>
+        <button id="assign-button" style="display: none;">Asignar Tarjeta Sugerida</button>
+    </div>
+
+    <script>
+        document.getElementById('cliente-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const clienteId = document.getElementById('cliente-id').value;
+
+            fetch(`/recommend/cliente/${clienteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('cliente-detalles').innerText = data.error;
+                    } else {
+                        const clienteDetalles = `
+                            <p>Nombre: ${data.cliente.nombre_completo}</p>
+                            <p>Tarjeta Actual: ${data.tarjetaActual}</p>
+                            <p>Beneficios Actuales: ${data.cliente.preferences.join(', ')}</p>
+                        `;
+                        document.getElementById('cliente-detalles').innerHTML = clienteDetalles;
+                        document.getElementById('cliente-id-hidden').value = data.cliente.id;
+                        document.getElementById('preferencias-form-container').style.display = 'block';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('preferences-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const preferences = Array.from(document.querySelectorAll('input[name="preferences"]'))
+                .map(input => input.checked ? 1 : 0);
+            const id = document.getElementById('cliente-id-hidden').value;
+
+            fetch('/recommend/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, preferences })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('recommendation').innerText = `Error: ${data.error}`;
+                } else {
+                    document.getElementById('recommendation').innerText = `Tarjeta Recomendada: ${data.recommendedCard}`;
+                    const assignButton = document.getElementById('assign-button');
+                    assignButton.style.display = 'block';
+                    assignButton.onclick = function() {
+                        fetch('/recommend/asignar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, tarjeta: data.recommendedCard })
+                        })
+                        .then(response => response.json())
+                        .then(assignData => {
+                            if (assignData.error) {
+                                alert(`Error: ${assignData.error}`);
+                            } else {
+                                alert(assignData.message);
+                                document.getElementById('recommendation').innerText += ` - Tarjeta Asignada`;
+                                assignButton.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    };
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

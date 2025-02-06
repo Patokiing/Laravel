@@ -1,0 +1,6 @@
+"id","nombre","puntos","cashback","premios","descuentos"
+"0","Oro",1,1,0,0
+"1","Platino",0,1,1,1
+"2","Clasica",1,0,1,0
+"3","Basica",0,0,1,0
+"4","Premium",1,1,1,1

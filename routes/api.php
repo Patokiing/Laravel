@@ -13,6 +13,10 @@ Route::get('/user', function (Request $request) {
 Route::post('login', [LoginController::class,'login']);
 
 Route::post('register', [RegisterController::class,'register']);
+Route::post('/users/{id}', [RegisterController::class, 'update']);
+Route::get('/users/{id}', [RegisterController::class, 'show']);
+Route::get('/users', [RegisterController::class, 'index']);
+Route::delete('/users/{id}', [RegisterController::class, 'destroy']);
 
 Route::get('clientes', [ClientesController::class,'index']);
 Route::get('cliente/{$id}', [ClientesController::class,'client']);

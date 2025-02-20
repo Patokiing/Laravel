@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('polizas', function (Blueprint $table) {
             $table->id();
             $table->integer('total_horas');
-            $table->dateTime('fecha_inicio');
-            $table->dateTime('fecha_fin');
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin');
             $table->decimal('precio', 18, 2);
             $table->foreignId('id_cliente')->constrained('users');
             $table->text('observaciones')->nullable();

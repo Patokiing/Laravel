@@ -6,6 +6,8 @@ use App\Http\Controllers\ClientesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PolizaController;
+use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\ServicioController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,4 +33,21 @@ Route::prefix('polizas')->group(function () {
     Route::get('/{id}', [PolizaController::class, 'show']);
     Route::post('/{id}', [PolizaController::class, 'update']);
     Route::delete('/{id}', [PolizaController::class, 'destroy']);
+});
+
+Route::prefix('facturas')->group(function () {
+    Route::get('/', [FacturaController::class, 'index']);
+    Route::get('/clientes', [FacturaController::class, 'getClientes']); // Nueva ruta
+    Route::post('/', [FacturaController::class, 'store']);
+    //Route::get('/{id}', [FacturaController::class, 'show']);
+    Route::put('/{id}', [FacturaController::class, 'update']);
+    Route::delete('/{id}', [FacturaController::class, 'destroy']);
+});
+
+Route::prefix('servicios')->group(function () {
+    Route::get('/', [ServicioController::class, 'index']);
+    Route::post('/', [ServicioController::class, 'store']);
+    Route::get('/{id}', [ServicioController::class, 'show']);
+    Route::put('/{id}', [ServicioController::class, 'update']);
+    Route::delete('/{id}', [ServicioController::class, 'destroy']);
 });

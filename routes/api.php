@@ -46,6 +46,8 @@ Route::prefix('facturas')->group(function () {
 
 Route::prefix('servicios')->group(function () {
     Route::get('/', [ServicioController::class, 'index']);
+    Route::get('/tecnicos', [ServicioController::class, 'getTecnicos']);
+    Route::get('/clientes', [ServicioController::class, 'getClientes']);
     Route::post('/', [ServicioController::class, 'store']);
     Route::get('/{id}', [ServicioController::class, 'show']);
     Route::put('/{id}', [ServicioController::class, 'update']);

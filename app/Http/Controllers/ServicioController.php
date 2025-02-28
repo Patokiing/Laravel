@@ -75,9 +75,7 @@ class ServicioController extends Controller
                 'id_tecnico' => 'required|exists:users,id',
                 'fecha' => 'required|date',
                 'horas' => 'required|numeric|min:0',
-                'observaciones' => 'nullable|string',
-                'id_poliza' => 'nullable|exists:polizas,id',
-                'id_factura' => 'nullable|exists:facturas,id'
+                'observaciones' => 'nullable|string'
             ]);
 
             // Verificar roles
@@ -93,17 +91,12 @@ class ServicioController extends Controller
                 throw new \Exception('Cliente o técnico no válidos');
             }
 
-            // Verificar horas disponibles si hay póliza
-            if ($request->id_poliza) {
-                $poliza = Poliza::findOrFail($request->id_poliza);
-                $horasDisponibles = $poliza->total_horas - $poliza->horas_consumidas;
-
-                if ($request->horas > $horasDisponibles) {
-                    throw new \Exception('Horas solicitadas exceden las disponibles en la póliza');
-                }
-
-                $poliza->horas_consumidas += $request->horas;
-                $poliza->save();
+            // Agregar póliza y factura al array validado si existen en la request
+            if ($request->has('id_poliza')) {
+                $validated['id_poliza'] = $request->id_poliza;
+            }
+            if ($request->has('id_factura')) {
+                $validated['id_factura'] = $request->id_factura;
             }
 
             $servicio = Servicio::create($validated);
@@ -132,23 +125,43 @@ class ServicioController extends Controller
 
     public function update(Request $request, $id)
     {
-        $servicio = Servicio::findOrFail($id);
+        try {
+            DB::beginTransaction();
+            
+            $servicio = Servicio::findOrFail($id);
 
-        $request->validate([
-            'id_cliente' => 'exists:users,id',
-            'id_tecnico' => 'exists:users,id',
-            'fecha' => 'date',
-            'horas' => 'numeric|min:0',
-            'observaciones' => 'nullable|string',
-            'id_poliza' => 'nullable|exists:polizas,id',
-            'id_factura' => 'nullable|exists:facturas,id'
-        ]);
+            $validated = $request->validate([
+                'id_cliente' => 'exists:users,id',
+                'id_tecnico' => 'exists:users,id',
+                'fecha' => 'date',
+                'horas' => 'numeric|min:0',
+                'observaciones' => 'nullable|string'
+            ]);
 
-        $servicio->update($request->all());
-        return response()->json([
-            'message' => 'Servicio actualizado exitosamente',
-            'servicio' => $servicio
-        ]);
+            // Agregar póliza y factura si están presentes en la request
+            if ($request->has('id_poliza')) {
+                $validated['id_poliza'] = $request->id_poliza;
+            }
+            if ($request->has('id_factura')) {
+                $validated['id_factura'] = $request->id_factura;
+            }
+
+            $servicio->update($validated);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Servicio actualizado exitosamente',
+                'servicio' => $servicio->load(['cliente', 'tecnico', 'poliza', 'factura'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al actualizar el servicio',
+                'error' => $e->getMessage()
+            ], 400);
+        }
     }
 
     public function destroy($id)

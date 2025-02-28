@@ -40,7 +40,7 @@ Route::prefix('facturas')->group(function () {
     Route::get('/clientes', [FacturaController::class, 'getClientes']); // Nueva ruta
     Route::post('/', [FacturaController::class, 'store']);
     //Route::get('/{id}', [FacturaController::class, 'show']);
-    Route::put('/{id}', [FacturaController::class, 'update']);
+    Route::post('/{id}', [FacturaController::class, 'update']);
     Route::delete('/{id}', [FacturaController::class, 'destroy']);
 });
 
@@ -50,6 +50,6 @@ Route::prefix('servicios')->group(function () {
     Route::get('/clientes', [ServicioController::class, 'getClientes']);
     Route::post('/', [ServicioController::class, 'store']);
     Route::get('/{id}', [ServicioController::class, 'show']);
-    Route::put('/{id}', [ServicioController::class, 'update']);
+    Route::post('/{id}', [ServicioController::class, 'update']);
     Route::delete('/{id}', [ServicioController::class, 'destroy']);
 });

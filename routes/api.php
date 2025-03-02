@@ -42,6 +42,7 @@ Route::prefix('facturas')->group(function () {
     //Route::get('/{id}', [FacturaController::class, 'show']);
     Route::post('/{id}', [FacturaController::class, 'update']);
     Route::delete('/{id}', [FacturaController::class, 'destroy']);
+    Route::get('/{id}/pdf-data', [FacturaController::class, 'getFacturaParaPDF']);
 });
 
 Route::prefix('servicios')->group(function () {
@@ -53,4 +54,7 @@ Route::prefix('servicios')->group(function () {
     Route::post('/{id}', [ServicioController::class, 'update']);
     Route::delete('/{id}', [ServicioController::class, 'destroy']);
     Route::get('/cliente/{clienteId}/polizas', [ServicioController::class, 'getPolizasByCliente']);
+    Route::get('cliente/{clienteId}/servicios-con-poliza', [ServicioController::class, 'getServiciosConPolizaByCliente']);
+    Route::get('/factura/{facturaId}', [ServicioController::class, 'getServicioByFactura']);
+    Route::post('/actualizarfactura/{id}', [ServicioController::class, 'updateFacturaId']);
 });

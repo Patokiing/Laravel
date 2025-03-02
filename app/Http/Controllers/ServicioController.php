@@ -198,4 +198,86 @@ class ServicioController extends Controller
         $servicio->delete();
         return response()->json(['message' => 'Servicio eliminado exitosamente']);
     }
+
+    public function getServiciosConPolizaByCliente($clienteId)
+    {
+        try {
+            $servicios = Servicio::with(['poliza'])
+                ->where('id_cliente', $clienteId)
+                ->whereNotNull('id_poliza')
+                ->whereNull('id_factura')  // Solo servicios no facturados
+                ->get()
+                ->map(function ($servicio) {
+                    return [
+                        'id' => $servicio->id,
+                        'id_poliza' => $servicio->id_poliza,
+                        'observaciones' => $servicio->observaciones,
+                        'horas' => $servicio->horas,
+                        'fecha' => $servicio->fecha,
+                        'poliza' => [
+                            'id' => $servicio->poliza->id,
+                            'precio' => $servicio->poliza->precio,
+                            'total_horas' => $servicio->poliza->total_horas,
+                        ]
+                    ];
+                });
+
+            return response()->json($servicios);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener servicios del cliente',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getServicioByFactura($facturaId)
+    {
+        try {
+            $servicio = Servicio::where('id_factura', $facturaId)
+                ->with('poliza')
+                ->first();
+
+            if (!$servicio) {
+                return response()->json(null);
+            }
+
+            return response()->json($servicio);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el servicio',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function updateFacturaId(Request $request, $id)
+    {
+        try {
+            // Validar que el id_factura existe
+            $validated = $request->validate([
+                'id_factura' => 'required|exists:facturas,id'
+            ]);
+
+            $servicio = Servicio::findOrFail($id);
+
+            // Verificar que el servicio no tenga ya una factura asignada
+            if ($servicio->id_factura && $servicio->id_factura != $validated['id_factura']) {
+                throw new \Exception('El servicio ya tiene una factura asignada');
+            }
+
+            // Actualizar solo el campo id_factura
+            $servicio->id_factura = $validated['id_factura'];
+            $servicio->save();
+
+            return response()->json([
+                'message' => 'Id de factura actualizado exitosamente',
+                'servicio' => $servicio->load(['factura'])
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar id de factura',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

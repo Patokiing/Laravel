@@ -52,4 +52,5 @@ Route::prefix('servicios')->group(function () {
     Route::get('/{id}', [ServicioController::class, 'show']);
     Route::post('/{id}', [ServicioController::class, 'update']);
     Route::delete('/{id}', [ServicioController::class, 'destroy']);
+    Route::get('/cliente/{clienteId}/polizas', [ServicioController::class, 'getPolizasByCliente']);
 });

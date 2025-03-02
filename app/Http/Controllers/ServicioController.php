@@ -65,6 +65,28 @@ class ServicioController extends Controller
         }
     }
 
+    public function getPolizasByCliente($clienteId)
+    {
+        try {
+            // Obtener todas las pólizas del cliente
+            $polizas = Poliza::where('id_cliente', $clienteId)->get();
+
+            // Calcular horas consumidas para cada póliza
+            foreach ($polizas as $poliza) {
+                $horasConsumidas = Servicio::where('id_poliza', $poliza->id)->sum('horas');
+                $poliza->horas_consumidas = $horasConsumidas;
+                $poliza->horas_disponibles = $poliza->total_horas - $horasConsumidas;
+            }
+
+            return response()->json($polizas);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener pólizas del cliente',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -75,7 +97,8 @@ class ServicioController extends Controller
                 'id_tecnico' => 'required|exists:users,id',
                 'fecha' => 'required|date',
                 'horas' => 'required|numeric|min:0',
-                'observaciones' => 'nullable|string'
+                'observaciones' => 'nullable|string',
+                'id_poliza' => 'nullable|exists:polizas,id'
             ]);
 
             // Verificar roles
@@ -91,12 +114,17 @@ class ServicioController extends Controller
                 throw new \Exception('Cliente o técnico no válidos');
             }
 
-            // Agregar póliza y factura al array validado si existen en la request
-            if ($request->has('id_poliza')) {
-                $validated['id_poliza'] = $request->id_poliza;
-            }
-            if ($request->has('id_factura')) {
-                $validated['id_factura'] = $request->id_factura;
+            // Verificar póliza si existe
+            if (!empty($validated['id_poliza'])) {
+                $poliza = Poliza::findOrFail($validated['id_poliza']);
+
+                // Calcular horas consumidas
+                $horasConsumidas = Servicio::where('id_poliza', $poliza->id)->sum('horas');
+                $horasDisponibles = $poliza->total_horas - $horasConsumidas;
+
+                if ($horasDisponibles < $validated['horas']) {
+                    throw new \Exception("No hay suficientes horas disponibles. Disponibles: {$horasDisponibles}");
+                }
             }
 
             $servicio = Servicio::create($validated);
@@ -105,14 +133,14 @@ class ServicioController extends Controller
 
             return response()->json([
                 'message' => 'Servicio creado exitosamente',
-                'servicio' => $servicio->load(['cliente', 'tecnico', 'poliza', 'factura'])
+                'servicio' => $servicio->load(['cliente', 'tecnico', 'poliza'])
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Error al crear el servicio',
-                'error' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'error' => true
             ], 400);
         }
     }
@@ -127,7 +155,7 @@ class ServicioController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $servicio = Servicio::findOrFail($id);
 
             $validated = $request->validate([

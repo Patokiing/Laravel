@@ -280,4 +280,27 @@ class ServicioController extends Controller
             ], 500);
         }
     }
+
+    public function getServiciosSinFactura($clienteId, $facturaId = null)
+    {
+        try {
+            $query = Servicio::where('id_cliente', $clienteId)
+                            ->whereNull('id_factura');
+
+            // Si estamos editando una factura, incluir también el servicio actualmente asociado
+            if ($facturaId) {
+                $query->orWhere('id_factura', $facturaId);
+            }
+
+            $servicios = $query->whereNull('id_poliza')  // Solo servicios sin póliza
+                              ->get();
+
+            return response()->json($servicios);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener servicios sin factura',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

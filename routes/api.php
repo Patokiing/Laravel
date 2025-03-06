@@ -57,4 +57,6 @@ Route::prefix('servicios')->group(function () {
     Route::get('cliente/{clienteId}/servicios-con-poliza', [ServicioController::class, 'getServiciosConPolizaByCliente']);
     Route::get('/factura/{facturaId}', [ServicioController::class, 'getServicioByFactura']);
     Route::post('/actualizarfactura/{id}', [ServicioController::class, 'updateFacturaId']);
+    Route::get('/cliente/{clienteId}/servicios-sin-factura', [ServicioController::class, 'getServiciosSinFactura']);
+    Route::get('/cliente/{clienteId}/servicios-sin-factura/{facturaId?}', [ServicioController::class, 'getServiciosSinFactura']);
 });

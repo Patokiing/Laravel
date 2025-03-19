@@ -21,7 +21,8 @@ Route::get('/users/{id}', [RegisterController::class, 'show']);
 Route::get('/users', [RegisterController::class, 'index']);
 Route::delete('/users/{id}', [RegisterController::class, 'destroy']);
 
-Route::get('clientes', [ClientesController::class,'index']);
+Route::get('clientes', [ClientesController::class,'UsuariosC']);
+Route::get('tecnicos', [ClientesController::class,'UsuariosT']);
 Route::get('cliente/{$id}', [ClientesController::class,'client']);
 Route::post('cliente/guardar', [ClientesController::class,'store']);
 Route::delete('cliente/eliminar/{$id}', [ClientesController::class,'destroy']);

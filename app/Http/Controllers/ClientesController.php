@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clientes;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ClientesController extends Controller
 {
-    public function index()
+    public function UsuariosC()
     {
-        $clientes = Clientes::where ('rol','C')->get();
+        $clientes = User::where ('rol','C')->get();
+        return $clientes;
+    }
+
+    public function UsuariosT()
+    {
+        $clientes = User::where ('rol','T')->get();
         return $clientes;
     }
 
@@ -30,7 +37,7 @@ class ClientesController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->id != 0) 
+        if ($request->id != 0)
         {
             $clientes = Clientes::find($request->id);
         }
